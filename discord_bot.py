@@ -63,7 +63,7 @@ class DogApiBot(discord.Client):
                 '+dogBreeds lists available breeds (e.g. +boxer gives you a Boxer dog) \n' +
                 '+dogBreeds2 to list second page of breeds (there\'s 5 pages) \n' +
                 '+dogInvite to invite me to another server \n' + 
-                '+dogHelp shows this message \n' +
+                '+help shows this message \n' +
                 f'Any concerns, PM {CREATOR} on Discord.')
 
 
