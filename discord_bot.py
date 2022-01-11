@@ -19,7 +19,7 @@ dog_queue = DogQueue(capacity=50)
 
 BREED_QUEUES = {}
 for name, breed_id in NAMES_IDS.items():
-    BREED_QUEUES[name] = DogQueue(breeds=[breed_id], capacity=5)
+    BREED_QUEUES[name] = DogQueue(breeds=[breed_id], capacity=3)
 
 BREEDS_LOWER = dict([(name.lower(), name) for name in NAMES_IDS.keys()])
 
@@ -55,13 +55,15 @@ class DogApiBot(discord.Client):
             await message.channel.send(f'Please use this link to invite me to your server: {INVITE_LINK}')
         if command in BREEDS_LOWER:
             await message.channel.send(get_dog_breed(command))
+        if command == 'dogservers':
+            await message.channel.send("# of servers: " + str(len(self.guilds)))
         if command == 'help':
             await message.channel.send(
                 'Thanks for using DogBot! \n' +
                 'Commands: \n' +
                 '+dog gives you a random dog image \n' +
                 '+dogBreeds lists available breeds (e.g. +boxer gives you a Boxer dog) \n' +
-                '+dogBreeds2 to list second page of breeds (there\'s 5 pages) \n' +
+                '+dogBreeds2 to list second page of breeds (there are 5 pages) \n' +
                 '+dogInvite to invite me to another server \n' + 
                 '+help shows this message \n' +
                 f'Any concerns, PM {CREATOR} on Discord.')
