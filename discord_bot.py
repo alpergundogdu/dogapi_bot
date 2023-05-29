@@ -18,11 +18,11 @@ CREATOR = args.creator
 
 INVITE_LINK = f'https://discord.com/oauth2/authorize?client_id={CLIENT_ID}&scope=bot&permissions=2048'
 
-dog_queue = DogQueue(capacity=50)
+dog_queue = DogQueue()
 
 BREED_QUEUES = {}
 for name, breed_id in NAMES_IDS.items():
-    BREED_QUEUES[name] = DogQueue(breeds=[breed_id], capacity=3)
+    BREED_QUEUES[name] = DogQueue(breeds=[breed_id])
 
 BREEDS_LOWER = dict([(name.lower(), name) for name in NAMES_IDS.keys()])
 
