@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 import argparse
 import discord
-from commands.dog import DogQueue, NAMES_IDS
+from commands.dog import DogQueue
+from commands.breeds import NAMES_IDS
 
 parser = argparse.ArgumentParser(description='Run a discord bot.')
 parser.add_argument('--token', type=str,

@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 import argparse
 import logging
-from commands.dog import DogQueue, NAMES_IDS
+from commands.dog import DogQueue
+from commands.breeds import NAMES_IDS
 from functools import partial
 from telegram.ext import CommandHandler, ApplicationBuilder
 
