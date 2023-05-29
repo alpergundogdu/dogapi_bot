@@ -4,9 +4,12 @@ import discord
 from commands.dog import DogQueue, NAMES_IDS
 
 parser = argparse.ArgumentParser(description='Run a discord bot.')
-parser.add_argument('--token', type=str, help='API token for the discord bot, retrieved from https://discord.com/developers')
-parser.add_argument('--client_id', type=str, help='Client ID of the bot, retrieved from https://discord.com/developers')
-parser.add_argument('--creator', type=str, help='Discord ID of the creator of this bot, that\'s you!')
+parser.add_argument('--token', type=str,
+                    help='API token for the discord bot, retrieved from https://discord.com/developers')
+parser.add_argument('--client_id', type=str,
+                    help='Client ID of the bot, retrieved from https://discord.com/developers')
+parser.add_argument('--creator', type=str,
+                    help='Discord ID of the creator of this bot, that\'s you!')
 args = parser.parse_args()
 
 CLIENT_ID = args.client_id
@@ -25,14 +28,17 @@ BREEDS_LOWER = dict([(name.lower(), name) for name in NAMES_IDS.keys()])
 
 DOG_EMOJIS = ['🐶', '🐕']
 
+
 def add_whitespace(text):
     return "".join([(' ' + char if char.isupper() else char) for char in list(text)]).strip()
+
 
 def get_dog_breed(breed):
     breed = BREEDS_LOWER[breed]
     name = add_whitespace(breed)
     image = BREED_QUEUES[breed].get()
     return 'Here\'s your ' + name + ' dog! ' + image
+
 
 class DogApiBot(discord.Client):
     async def on_ready(self):
@@ -64,10 +70,13 @@ class DogApiBot(discord.Client):
                 '+dog gives you a random dog image \n' +
                 '+dogBreeds lists available breeds (e.g. +boxer gives you a Boxer dog) \n' +
                 '+dogBreeds2 to list second page of breeds (there are 5 pages) \n' +
-                '+dogInvite to invite me to another server \n' + 
+                '+dogInvite to invite me to another server \n' +
                 '+help shows this message \n' +
                 f'Any concerns, PM {CREATOR} on Discord.')
 
 
-client = DogApiBot()
+intents = discord.Intents.default()
+intents.message_content = True
+
+client = DogApiBot(intents=intents)
 client.run(API_TOKEN)
