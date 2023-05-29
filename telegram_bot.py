@@ -27,10 +27,10 @@ async def fetch_breeds(update, context):
 
 def install_telegram(application):
     application.add_handler(CommandHandler(
-        ['start', 'dog'], partial(fetch_dog, DogQueue(capacity=50))))
+        ['start', 'dog'], partial(fetch_dog, DogQueue())))
     for name, breed_id in NAMES_IDS.items():
         application.add_handler(CommandHandler(name, partial(
-            fetch_dog, DogQueue(breeds=[breed_id], capacity=5))))
+            fetch_dog, DogQueue(breeds=[breed_id]))))
     application.add_handler(CommandHandler('breeds', fetch_breeds))
 
 
