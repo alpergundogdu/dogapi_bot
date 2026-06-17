@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import argparse
 import discord
+from discord import app_commands
 from commands.dog import DogQueue
 from commands.breeds import NAMES_IDS
 
@@ -25,59 +26,79 @@ BREED_QUEUES = {}
 for name, breed_id in NAMES_IDS.items():
     BREED_QUEUES[name] = DogQueue(breeds=[breed_id])
 
-BREEDS_LOWER = dict([(name.lower(), name) for name in NAMES_IDS.keys()])
-
-DOG_EMOJIS = ['🐶', '🐕']
-
 
 def add_whitespace(text):
     return "".join([(' ' + char if char.isupper() else char) for char in list(text)]).strip()
 
 
 def get_dog_breed(breed):
-    breed = BREEDS_LOWER[breed]
     name = add_whitespace(breed)
     image = BREED_QUEUES[breed].get()
     return 'Here\'s your ' + name + ' dog! ' + image
 
 
-class DogApiBot(discord.Client):
-    async def on_ready(self):
-        pass
+def breed_list_chunks():
+    # ponytail: Discord caps a message at 2000 chars; ~160 breeds overflow, so pack into lines
+    chunks, cur = [], ''
+    for name in NAMES_IDS:
+        piece = (', ' if cur else '') + name
+        if len(cur) + len(piece) > 1900:
+            chunks.append(cur)
+            cur = name
+        else:
+            cur += piece
+    if cur:
+        chunks.append(cur)
+    return chunks
 
-    async def on_message(self, message):
-        if len(message.content) < 2 or message.content[0] != '+':
-            return
-        command = message.content[1:].lower()
-        if command == 'dog' or command in DOG_EMOJIS:
-            await message.channel.send('Here\'s your dog! ' + dog_queue.get())
-        if command.startswith('dogbreeds'):
-            try:
-                page = int(command[9:]) - 1
-            except:
-                page = 0
-            await message.channel.send('Breeds: ' + ', '.join(
-                ['+' + name for name in NAMES_IDS.keys()][(page*40):(page*40+40)]))
-        if command == 'doginvite':
-            await message.channel.send(f'Please use this link to invite me to your server: {INVITE_LINK}')
-        if command in BREEDS_LOWER:
-            await message.channel.send(get_dog_breed(command))
-        if command == 'dogservers':
-            await message.channel.send("# of servers: " + str(len(self.guilds)))
-        if command == 'help':
-            await message.channel.send(
-                'Thanks for using DogBot! \n' +
-                'Commands: \n' +
-                '+dog gives you a random dog image \n' +
-                '+dogBreeds lists available breeds (e.g. +boxer gives you a Boxer dog) \n' +
-                '+dogBreeds2 to list second page of breeds (there are 5 pages) \n' +
-                '+dogInvite to invite me to another server \n' +
-                '+help shows this message \n' +
-                f'Any concerns, PM {CREATOR} on Discord.')
+
+class DogApiBot(discord.Client):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.tree = app_commands.CommandTree(self)
+
+    async def setup_hook(self):
+        await self.tree.sync()
 
 
 intents = discord.Intents.default()
-intents.message_content = True
-
 client = DogApiBot(intents=intents)
+
+
+@client.tree.command(name='dog', description='Get a random dog image')
+async def dog(interaction: discord.Interaction):
+    await interaction.response.send_message('Here\'s your dog! ' + dog_queue.get())
+
+
+@client.tree.command(name='dogbreeds', description='List available dog breeds')
+async def dogbreeds(interaction: discord.Interaction):
+    chunks = breed_list_chunks()
+    await interaction.response.send_message('Breeds: ' + chunks[0])
+    for chunk in chunks[1:]:
+        await interaction.followup.send(chunk)
+
+
+@client.tree.command(name='breed', description='Get a dog of a specific breed')
+@app_commands.describe(name='The breed of dog you want')
+async def breed(interaction: discord.Interaction, name: str):
+    if name not in NAMES_IDS:
+        await interaction.response.send_message(
+            f'Unknown breed "{name}". Use /dogbreeds to see the list.', ephemeral=True)
+        return
+    await interaction.response.send_message(get_dog_breed(name))
+
+
+@breed.autocomplete('name')
+async def breed_autocomplete(interaction: discord.Interaction, current: str):
+    # ponytail: Discord caps choices at 25, so filter by what's typed and slice
+    matches = [n for n in NAMES_IDS if current.lower() in n.lower()]
+    return [app_commands.Choice(name=add_whitespace(n), value=n) for n in matches[:25]]
+
+
+@client.tree.command(name='doginvite', description='Get a link to invite the bot to your server')
+async def doginvite(interaction: discord.Interaction):
+    await interaction.response.send_message(
+        f'Please use this link to invite me to your server: {INVITE_LINK}')
+
+
 client.run(API_TOKEN)
